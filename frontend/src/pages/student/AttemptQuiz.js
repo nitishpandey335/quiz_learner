@@ -1,9 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { getQuizById, submitAttempt, markAttendance, getMyAttendance } from '../../utils/api';
 import Loader from '../../components/Loader';
+
+const MAX_TAB_SWITCHES = 3;
 
 const AttemptQuiz = () => {
     const { id } = useParams();
@@ -18,6 +20,13 @@ const AttemptQuiz = () => {
     const [scheduledAt, setScheduledAt] = useState(null);
     const [countdown, setCountdown] = useState(null);
 
+    // Tab switch
+    const [tabSwitchCount, setTabSwitchCount] = useState(0);
+    const [showTabWarning, setShowTabWarning] = useState(false);
+    const [warningMsg, setWarningMsg] = useState('');
+    const tabSwitchRef = useRef(0);
+    const submittingRef = useRef(false);
+
     // Attendance
     const [showAttendance, setShowAttendance] = useState(false);
     const [attendanceMarked, setAttendanceMarked] = useState(false);
@@ -26,9 +35,8 @@ const AttemptQuiz = () => {
     useEffect(() => {
         getQuizById(id)
             .then(({ data }) => {
-                const shuffled = [...data.questions].sort(() => Math.random() - 0.5);
-                setQuiz({ ...data, questions: shuffled });
-                setAnswers(new Array(shuffled.length).fill(-1));
+                setQuiz(data);
+                setAnswers(new Array(data.questions.length).fill(-1));
                 setTimeLeft(data.duration * 60);
                 if (data.attendanceEnabled) {
                     getMyAttendance(id).then(({ data: att }) => {
@@ -61,6 +69,64 @@ const AttemptQuiz = () => {
         return () => clearInterval(tick);
     }, [scheduledAt]);
 
+    const handleSubmit = useCallback(async () => {
+        if (submittingRef.current) return;
+        submittingRef.current = true;
+        setSubmitting(true);
+        try {
+            const timeTaken = Math.round((Date.now() - startTime) / 1000);
+            const { data } = await submitAttempt({ quizId: id, answers, timeTaken });
+            toast.success('Quiz submitted!');
+            navigate(`/student/result/${data._id}`);
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Submission failed');
+            setSubmitting(false);
+            submittingRef.current = false;
+        }
+    }, [id, answers, startTime, navigate]);
+
+    // Tab switch detection
+    useEffect(() => {
+        if (!quiz) return;
+
+        const handleVisibilityChange = () => {
+            if (document.hidden && !submittingRef.current) {
+                tabSwitchRef.current += 1;
+                const count = tabSwitchRef.current;
+                setTabSwitchCount(count);
+                const remaining = MAX_TAB_SWITCHES - count;
+
+                if (count >= MAX_TAB_SWITCHES) {
+                    setWarningMsg('🚨 Maximum tab switches exceeded! Submitting your test automatically...');
+                    setShowTabWarning(true);
+                    setTimeout(() => {
+                        setShowTabWarning(false);
+                        handleSubmit();
+                    }, 2500);
+                } else {
+                    setWarningMsg(`⚠️ Tab switch detected! Warning ${count}/${MAX_TAB_SWITCHES}. ${remaining} warning${remaining > 1 ? 's' : ''} left before auto-submit.`);
+                    setShowTabWarning(true);
+                    setTimeout(() => setShowTabWarning(false), 4000);
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [quiz, handleSubmit]);
+
+    // Timer
+    useEffect(() => {
+        if (!timeLeft || !quiz) return;
+        const timer = setInterval(() => {
+            setTimeLeft((t) => {
+                if (t <= 1) { clearInterval(timer); handleSubmit(); return 0; }
+                return t - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [quiz, handleSubmit, timeLeft]);
+
     const handleMarkAttendance = async () => {
         setMarkingAttendance(true);
         try {
@@ -73,34 +139,8 @@ const AttemptQuiz = () => {
         } finally { setMarkingAttendance(false); }
     };
 
-    const handleSubmit = useCallback(async () => {
-        if (submitting) return;
-        setSubmitting(true);
-        try {
-            const timeTaken = Math.round((Date.now() - startTime) / 1000);
-            const { data } = await submitAttempt({ quizId: id, answers, timeTaken });
-            toast.success('Quiz submitted!');
-            navigate(`/student/result/${data._id}`);
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Submission failed');
-            setSubmitting(false);
-        }
-    }, [id, answers, startTime, navigate, submitting]);
-
-    useEffect(() => {
-        if (!timeLeft || !quiz) return;
-        const timer = setInterval(() => {
-            setTimeLeft((t) => {
-                if (t <= 1) { clearInterval(timer); handleSubmit(); return 0; }
-                return t - 1;
-            });
-        }, 1000);
-        return () => clearInterval(timer);
-    }, [quiz, handleSubmit, timeLeft]);
-
     if (loading) return <Loader />;
 
-    // Scheduled quiz — not started yet
     if (scheduledAt) {
         return (
             <div style={styles.page}>
@@ -130,6 +170,30 @@ const AttemptQuiz = () => {
 
     return (
         <div style={styles.page}>
+            {/* Tab Switch Warning Banner */}
+            <AnimatePresence>
+                {showTabWarning && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -80 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -80 }}
+                        style={{
+                            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999,
+                            background: tabSwitchCount >= MAX_TAB_SWITCHES ? '#ef4444' : '#f59e0b',
+                            color: '#fff', padding: '1rem 1.5rem',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            gap: '1rem', fontWeight: 700, fontSize: '1rem',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                        }}>
+                        <span style={{ fontSize: '1.5rem' }}>{tabSwitchCount >= MAX_TAB_SWITCHES ? '🚨' : '⚠️'}</span>
+                        <span>{warningMsg}</span>
+                        <span style={{ background: 'rgba(0,0,0,0.2)', padding: '0.2rem 0.8rem', borderRadius: '20px', fontSize: '0.85rem' }}>
+                            {tabSwitchCount}/{MAX_TAB_SWITCHES}
+                        </span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Attendance Modal */}
             <AnimatePresence>
                 {showAttendance && (
@@ -144,9 +208,7 @@ const AttemptQuiz = () => {
                                 disabled={markingAttendance} style={styles.attendBtn}>
                                 {markingAttendance ? 'Marking...' : '✅ Mark Present'}
                             </motion.button>
-                            <button onClick={() => setShowAttendance(false)} style={styles.skipBtn}>
-                                Skip for now
-                            </button>
+                            <button onClick={() => setShowAttendance(false)} style={styles.skipBtn}>Skip for now</button>
                         </motion.div>
                     </motion.div>
                 )}
@@ -161,8 +223,20 @@ const AttemptQuiz = () => {
                         {attendanceMarked && <span style={styles.attBadge}>✅ Present</span>}
                     </p>
                 </div>
-                <div style={{ ...styles.timer, color: timeLeft < 60 ? '#ef4444' : 'var(--primary)' }}>
-                    ⏱ {mins}:{secs}
+                <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {tabSwitchCount > 0 && (
+                        <div style={{
+                            background: tabSwitchCount >= MAX_TAB_SWITCHES - 1 ? '#ef444420' : '#f59e0b20',
+                            color: tabSwitchCount >= MAX_TAB_SWITCHES - 1 ? '#ef4444' : '#f59e0b',
+                            padding: '0.4rem 0.8rem', borderRadius: '10px', fontSize: '0.78rem', fontWeight: 700,
+                            border: `1px solid ${tabSwitchCount >= MAX_TAB_SWITCHES - 1 ? '#ef4444' : '#f59e0b'}`
+                        }}>
+                            ⚠️ {tabSwitchCount}/{MAX_TAB_SWITCHES} switches
+                        </div>
+                    )}
+                    <div style={{ ...styles.timer, color: timeLeft < 60 ? '#ef4444' : 'var(--primary)' }}>
+                        ⏱ {mins}:{secs}
+                    </div>
                 </div>
             </div>
 
@@ -211,7 +285,7 @@ const AttemptQuiz = () => {
 };
 
 const styles = {
-    page: { padding: '2rem 3rem', maxWidth: 800, margin: '0 auto' },
+    page: { padding: '1rem', maxWidth: 800, margin: '0 auto' },
     schedCard: { background: 'var(--card)', borderRadius: '24px', padding: '3rem', textAlign: 'center', border: '1px solid var(--border)', maxWidth: 480, margin: '4rem auto' },
     countdownBox: { background: 'var(--bg)', borderRadius: '12px', padding: '1rem 2rem', fontSize: '1.2rem', marginBottom: '1.5rem', border: '1px solid var(--border)' },
     backBtn: { background: 'var(--primary)', color: '#fff', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' },
