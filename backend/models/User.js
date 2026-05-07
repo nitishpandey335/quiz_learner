@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
         role: { type: String, enum: ['admin', 'teacher', 'student'], default: 'student' },
         avatar: { type: String, default: '' },
         isActive: { type: Boolean, default: true },
+        profileSetup: { type: Boolean, default: false },
         otp: { type: String },
         otpExpiry: { type: Date },
         studentClass: { type: String, default: '' },

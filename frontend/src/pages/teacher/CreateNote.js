@@ -10,15 +10,24 @@ const CLASS_OPTIONS = [
     'College 1st Year', 'College 2nd Year', 'College 3rd Year', 'College 4th Year',
 ];
 
+const COURSE_OPTIONS = {
+    'College 1st Year': ['B.Tech', 'BCA', 'BBA', 'B.Sc', 'B.Com', 'BA', 'MBA', 'MCA', 'M.Tech', 'Other'],
+    'College 2nd Year': ['B.Tech', 'BCA', 'BBA', 'B.Sc', 'B.Com', 'BA', 'MBA', 'MCA', 'M.Tech', 'Other'],
+    'College 3rd Year': ['B.Tech', 'BCA', 'BBA', 'B.Sc', 'B.Com', 'BA', 'MBA', 'MCA', 'M.Tech', 'Other'],
+    'College 4th Year': ['B.Tech', 'BCA', 'BBA', 'B.Sc', 'B.Com', 'BA', 'MBA', 'MCA', 'M.Tech', 'Other'],
+};
+
+const isCollege = (cls) => cls?.startsWith('College');
+
 const CreateNote = () => {
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [form, setForm] = useState({ title: '', content: '', subject: '', targetClass: '', section: '', tags: '' });
+    const [form, setForm] = useState({ title: '', content: '', subject: '', targetClass: '', course: '', section: '', tags: '' });
     const [saving, setSaving] = useState(false);
-    const [aiForm, setAiForm] = useState({ subject: '', topic: '', targetClass: '', section: '' });
+    const [aiForm, setAiForm] = useState({ subject: '', topic: '', targetClass: '', course: '', section: '' });
     const [aiLoading, setAiLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
-    const [pdfForm, setPdfForm] = useState({ title: '', subject: '', targetClass: '', section: '', tags: '' });
+    const [pdfForm, setPdfForm] = useState({ title: '', subject: '', targetClass: '', course: '', section: '', tags: '' });
     const [pdfFile, setPdfFile] = useState(null);
     const [pdfUploading, setPdfUploading] = useState(false);
     const [showPdfForm, setShowPdfForm] = useState(false);
@@ -40,6 +49,7 @@ const CreateNote = () => {
                 content: data.content,
                 subject: aiForm.subject,
                 targetClass: aiForm.targetClass,
+                course: aiForm.course,
                 section: aiForm.section,
                 title: aiForm.topic,
             }));
@@ -59,7 +69,7 @@ const CreateNote = () => {
             const tags = form.tags ? form.tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
             await createNote({ ...form, tags });
             toast.success('Note created successfully!');
-            setForm({ title: '', content: '', subject: '', targetClass: '', section: '', tags: '' });
+            setForm({ title: '', content: '', subject: '', targetClass: '', course: '', section: '', tags: '' });
             setShowForm(false);
             fetchNotes();
         } catch (err) {
@@ -88,11 +98,12 @@ const CreateNote = () => {
             formData.append('title', pdfForm.title);
             formData.append('subject', pdfForm.subject);
             formData.append('targetClass', pdfForm.targetClass);
+            formData.append('course', pdfForm.course);
             formData.append('section', pdfForm.section);
             formData.append('tags', pdfForm.tags);
             await uploadPDFNote(formData);
             toast.success('PDF uploaded successfully!');
-            setPdfForm({ title: '', subject: '', targetClass: '', section: '', tags: '' });
+            setPdfForm({ title: '', subject: '', targetClass: '', course: '', section: '', tags: '' });
             setPdfFile(null);
             setShowPdfForm(false);
             fetchNotes();
@@ -122,10 +133,17 @@ const CreateNote = () => {
                     <input style={styles.input} placeholder="Topic (e.g. Quadratic Equations)" value={aiForm.topic}
                         onChange={(e) => setAiForm({ ...aiForm, topic: e.target.value })} />
                     <select style={styles.input} value={aiForm.targetClass}
-                        onChange={(e) => setAiForm({ ...aiForm, targetClass: e.target.value })}>
+                        onChange={(e) => setAiForm({ ...aiForm, targetClass: e.target.value, course: '' })}>
                         <option value="">Select class</option>
                         {CLASS_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
+                    {isCollege(aiForm.targetClass) && (
+                        <select style={styles.input} value={aiForm.course}
+                            onChange={(e) => setAiForm({ ...aiForm, course: e.target.value })}>
+                            <option value="">Select Course</option>
+                            {(COURSE_OPTIONS[aiForm.targetClass] || []).map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    )}
                     <input style={styles.input} placeholder="Section (optional, e.g. A, B)" value={aiForm.section}
                         onChange={(e) => setAiForm({ ...aiForm, section: e.target.value })} />
                     <motion.button type="button" whileTap={{ scale: 0.97 }} onClick={handleAIGenerate}
@@ -153,10 +171,17 @@ const CreateNote = () => {
                             <input style={styles.input} placeholder="Subject *" value={pdfForm.subject}
                                 onChange={(e) => setPdfForm({ ...pdfForm, subject: e.target.value })} required />
                             <select style={styles.input} value={pdfForm.targetClass}
-                                onChange={(e) => setPdfForm({ ...pdfForm, targetClass: e.target.value })} required>
+                                onChange={(e) => setPdfForm({ ...pdfForm, targetClass: e.target.value, course: '' })} required>
                                 <option value="">Target Class *</option>
                                 {CLASS_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
                             </select>
+                            {isCollege(pdfForm.targetClass) && (
+                                <select style={styles.input} value={pdfForm.course}
+                                    onChange={(e) => setPdfForm({ ...pdfForm, course: e.target.value })}>
+                                    <option value="">Select Course</option>
+                                    {(COURSE_OPTIONS[pdfForm.targetClass] || []).map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            )}
                             <input style={styles.input} placeholder="Section (optional, e.g. A, B, Science)" value={pdfForm.section}
                                 onChange={(e) => setPdfForm({ ...pdfForm, section: e.target.value })} />
                             <input style={styles.input} placeholder="Tags (comma separated)" value={pdfForm.tags}
@@ -187,10 +212,17 @@ const CreateNote = () => {
                             <input style={styles.input} placeholder="Subject *" value={form.subject}
                                 onChange={(e) => setForm({ ...form, subject: e.target.value })} required />
                             <select style={styles.input} value={form.targetClass}
-                                onChange={(e) => setForm({ ...form, targetClass: e.target.value })} required>
+                                onChange={(e) => setForm({ ...form, targetClass: e.target.value, course: '' })} required>
                                 <option value="">Target Class *</option>
                                 {CLASS_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
                             </select>
+                            {isCollege(form.targetClass) && (
+                                <select style={styles.input} value={form.course}
+                                    onChange={(e) => setForm({ ...form, course: e.target.value })}>
+                                    <option value="">Select Course</option>
+                                    {(COURSE_OPTIONS[form.targetClass] || []).map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            )}
                             <input style={styles.input} placeholder="Section (optional, e.g. A, B, Science)" value={form.section}
                                 onChange={(e) => setForm({ ...form, section: e.target.value })} />
                             <input style={styles.input} placeholder="Tags (comma separated, optional)" value={form.tags}
@@ -219,6 +251,7 @@ const CreateNote = () => {
                             <div style={styles.noteTitle}>{note.title}</div>
                             <div style={styles.noteMeta}>
                                 <span style={styles.classBadge}>{note.targetClass}</span>
+                                {note.course && <span style={styles.courseBadge}>📚 {note.course}</span>}
                                 {note.section && <span style={styles.sectionBadge}>§ {note.section}</span>}
                                 <span style={styles.subjectBadge}>{note.subject}</span>
                                 {note.pdfUrl && <span style={{ background: '#ef444420', color: '#ef4444', padding: '0.2rem 0.7rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>📄 PDF</span>}
@@ -240,7 +273,7 @@ const CreateNote = () => {
 };
 
 const styles = {
-    page: { padding: '2rem 3rem', maxWidth: 1000, margin: '0 auto' },
+    page: { padding: 'clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 3rem)', maxWidth: 1000, margin: '0 auto' },
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' },
     title: { fontSize: '2rem', fontWeight: 700, color: 'var(--text)' },
     toggleBtn: { background: 'var(--primary)', color: '#fff', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' },
@@ -262,6 +295,7 @@ const styles = {
     classBadge: { background: '#6366f120', color: 'var(--primary)', padding: '0.2rem 0.7rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 },
     subjectBadge: { background: '#10b98120', color: '#10b981', padding: '0.2rem 0.7rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 },
     sectionBadge: { background: '#f59e0b20', color: '#f59e0b', padding: '0.2rem 0.7rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 },
+    courseBadge: { background: '#06b6d420', color: '#06b6d4', padding: '0.2rem 0.7rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 },
     deleteBtn: { background: '#ef444420', color: '#ef4444', border: 'none', padding: '0.4rem 0.9rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 500 },
     pdfCard: { background: 'linear-gradient(135deg,#10b98110,#06b6d410)', border: '2px solid #10b981', borderRadius: '16px', padding: '1.8rem', marginBottom: '1.5rem' },
     fileInputWrap: { marginBottom: '1rem' },
@@ -269,3 +303,4 @@ const styles = {
 };
 
 export default CreateNote;
+

@@ -46,6 +46,7 @@ const login = async (req, res) => {
         res.json({
             _id: user._id, name: user.name, email: user.email,
             role: user.role, token: generateToken(user._id),
+            avatar: user.avatar || '', profileSetup: user.profileSetup || false,
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -94,6 +95,7 @@ const loginWithOtp = async (req, res) => {
         res.json({
             _id: user._id, name: user.name, email: user.email,
             role: user.role, token: generateToken(user._id),
+            avatar: user.avatar || '', profileSetup: user.profileSetup || false,
         });
     } catch (err) {
         res.status(500).json({ message: err.message });

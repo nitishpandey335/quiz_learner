@@ -96,7 +96,7 @@ const QuizAnalytics = () => {
 };
 
 const styles = {
-    page: { padding: '2rem 3rem', maxWidth: 1100, margin: '0 auto' },
+    page: { padding: 'clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 3rem)', maxWidth: 1100, margin: '0 auto' },
     title: { fontSize: '2rem', fontWeight: 700, color: 'var(--text)' },
     pdfBtn: { background: '#10b981', color: '#fff', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' },
     grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem', marginBottom: '2rem' },
@@ -112,3 +112,4 @@ const styles = {
 };
 
 export default QuizAnalytics;
+

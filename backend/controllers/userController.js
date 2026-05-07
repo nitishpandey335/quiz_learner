@@ -72,4 +72,34 @@ const createUser = async (req, res) => {
     }
 };
 
-module.exports = { getAllUsers, deleteUser, updateUser, getPlatformAnalytics, createUser };
+// POST /api/users/avatar — upload profile picture
+const uploadAvatar = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: 'No image uploaded' });
+        const avatarUrl = `/uploads/${req.file.filename}`;
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            { avatar: avatarUrl, profileSetup: true },
+            { new: true }
+        ).select('-password');
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// PUT /api/users/profile-setup — mark profile as setup done
+const completeProfileSetup = async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            { profileSetup: true },
+            { new: true }
+        ).select('-password');
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+module.exports = { getAllUsers, deleteUser, updateUser, getPlatformAnalytics, createUser, uploadAvatar, completeProfileSetup };

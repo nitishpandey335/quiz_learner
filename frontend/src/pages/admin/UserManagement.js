@@ -43,7 +43,7 @@ const UserManagement = () => {
 
     const openEdit = (user) => {
         setEditUser(user);
-        setEditForm({ studentClass: user.studentClass || '', section: user.section || '' });
+        setEditForm({ studentClass: user.studentClass || '', section: user.section || '', collegeCourse: user.collegeCourse || '' });
     };
 
     const handleSaveEdit = async () => {
@@ -52,6 +52,7 @@ const UserManagement = () => {
             const { data } = await updateUser(editUser._id, {
                 studentClass: editForm.studentClass.trim(),
                 section: editForm.section.trim(),
+                collegeCourse: (editForm.collegeCourse || '').trim(),
             });
             setUsers((prev) => prev.map((u) => (u._id === data._id ? data : u)));
             toast.success('Student profile updated');
@@ -87,11 +88,22 @@ const UserManagement = () => {
                                 <div>
                                     <label style={styles.label}>Class</label>
                                     <input style={styles.input} list="class-opts-modal" placeholder="e.g. College 1st Year"
-                                        value={editForm.studentClass} onChange={e => setEditForm({ ...editForm, studentClass: e.target.value })} />
+                                        value={editForm.studentClass} onChange={e => setEditForm({ ...editForm, studentClass: e.target.value, collegeCourse: '' })} />
                                     <datalist id="class-opts-modal">
                                         {CLASS_OPTIONS.map(c => <option key={c} value={c} />)}
                                     </datalist>
                                 </div>
+                                {editForm.studentClass?.startsWith('College') && (
+                                    <div>
+                                        <label style={styles.label}>Course</label>
+                                        <select style={styles.input} value={editForm.collegeCourse || ''}
+                                            onChange={e => setEditForm({ ...editForm, collegeCourse: e.target.value })}>
+                                            <option value="">Select Course</option>
+                                            {['B.Tech', 'BCA', 'BBA', 'B.Sc', 'B.Com', 'BA', 'MBA', 'MCA', 'M.Tech', 'Other']
+                                                .map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    </div>
+                                )}
                                 <div>
                                     <label style={styles.label}>Section</label>
                                     <input style={styles.input} placeholder="e.g. K22DFO, A, B"
@@ -136,7 +148,9 @@ const UserManagement = () => {
                                     {u.role === 'student' ? (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                             <span style={{ fontSize: '0.82rem', color: u.studentClass ? 'var(--text)' : '#ef4444', fontWeight: u.studentClass ? 400 : 600 }}>
-                                                {u.studentClass || '⚠️ Not set'}{u.section ? ` · ${u.section}` : ''}
+                                                {u.studentClass || '⚠️ Not set'}
+                                                {u.collegeCourse ? ` · ${u.collegeCourse}` : ''}
+                                                {u.section ? ` · ${u.section}` : ''}
                                             </span>
                                             <button onClick={() => openEdit(u)} style={styles.editBtn} title="Edit class/section">✏️</button>
                                         </div>

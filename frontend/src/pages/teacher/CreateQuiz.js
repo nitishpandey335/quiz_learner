@@ -15,12 +15,21 @@ const CLASS_OPTIONS = [
     'College 1st Year', 'College 2nd Year', 'College 3rd Year', 'College 4th Year',
 ];
 
+const COURSE_OPTIONS = {
+    'College 1st Year': ['B.Tech', 'BCA', 'BBA', 'B.Sc', 'B.Com', 'BA', 'MBA', 'MCA', 'M.Tech', 'Other'],
+    'College 2nd Year': ['B.Tech', 'BCA', 'BBA', 'B.Sc', 'B.Com', 'BA', 'MBA', 'MCA', 'M.Tech', 'Other'],
+    'College 3rd Year': ['B.Tech', 'BCA', 'BBA', 'B.Sc', 'B.Com', 'BA', 'MBA', 'MCA', 'M.Tech', 'Other'],
+    'College 4th Year': ['B.Tech', 'BCA', 'BBA', 'B.Sc', 'B.Com', 'BA', 'MBA', 'MCA', 'M.Tech', 'Other'],
+};
+
+const isCollege = (cls) => cls?.startsWith('College');
+
 const CreateQuiz = () => {
     const navigate = useNavigate();
     const [quiz, setQuiz] = useState({
         title: '', description: '', category: '', subject: '',
         duration: 30, difficulty: 'medium', isPublished: false,
-        targetClass: '', section: '',
+        targetClass: '', course: '', section: '',
         quizType: 'dpp', startTime: '', expiryTime: '',
         attendanceEnabled: false,
     });
@@ -112,10 +121,16 @@ const CreateQuiz = () => {
                             <option value="medium">Medium</option>
                             <option value="hard">Hard</option>
                         </select>
-                        <select style={s.input} value={quiz.targetClass} onChange={(e) => setQuiz({ ...quiz, targetClass: e.target.value })}>
+                        <select style={s.input} value={quiz.targetClass} onChange={(e) => setQuiz({ ...quiz, targetClass: e.target.value, course: '' })}>
                             <option value="">Target Class (optional)</option>
                             {CLASS_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
                         </select>
+                        {isCollege(quiz.targetClass) && (
+                            <select style={s.input} value={quiz.course} onChange={(e) => setQuiz({ ...quiz, course: e.target.value })}>
+                                <option value="">Select Course (optional)</option>
+                                {(COURSE_OPTIONS[quiz.targetClass] || []).map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                        )}
                         <input style={s.input} placeholder="Section (optional, e.g. A, B, Science)" value={quiz.section}
                             onChange={(e) => setQuiz({ ...quiz, section: e.target.value })} />
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text)' }}>
@@ -252,7 +267,7 @@ const CreateQuiz = () => {
 };
 
 const s = {
-    page: { padding: '2rem 3rem', maxWidth: 900, margin: '0 auto' },
+    page: { padding: 'clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 3rem)', maxWidth: 900, margin: '0 auto' },
     title: { fontSize: '2rem', fontWeight: 700, color: 'var(--text)', marginBottom: '2rem' },
     card: { background: 'var(--card)', borderRadius: '16px', padding: '2rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow)', marginBottom: '1.5rem' },
     aiCard: { background: 'linear-gradient(135deg,#6366f115,#06b6d415)', borderRadius: '16px', padding: '2rem', border: '2px solid var(--primary)', marginBottom: '1.5rem' },
@@ -268,3 +283,4 @@ const s = {
 };
 
 export default CreateQuiz;
+

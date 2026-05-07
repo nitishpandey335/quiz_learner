@@ -65,11 +65,11 @@ const ManageQuizzes = () => {
 };
 
 const styles = {
-    page: { padding: '2rem 3rem', maxWidth: 1200, margin: '0 auto' },
+    page: { padding: 'clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 3rem)', maxWidth: 1200, margin: '0 auto' },
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' },
     title: { fontSize: '2rem', fontWeight: 700, color: 'var(--text)' },
     createBtn: { background: 'var(--primary)', color: '#fff', padding: '0.7rem 1.5rem', borderRadius: '10px', fontWeight: 600 },
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.5rem' },
     card: { background: 'var(--card)', borderRadius: '16px', padding: '1.5rem', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' },
     cardTop: { display: 'flex', gap: '0.5rem', marginBottom: '0.8rem' },
     diffBadge: { padding: '0.2rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, textTransform: 'capitalize' },
@@ -82,3 +82,5 @@ const styles = {
 };
 
 export default ManageQuizzes;
+
+

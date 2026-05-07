@@ -234,7 +234,7 @@ const SectionResults = () => {
 };
 
 const s = {
-    page: { padding: '2rem 3rem', maxWidth: 1100, margin: '0 auto' },
+    page: { padding: 'clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 3rem)', maxWidth: 1100, margin: '0 auto' },
     title: { fontSize: '2rem', fontWeight: 700, color: 'var(--text)', marginBottom: '1.5rem' },
     card: { background: 'var(--card)', borderRadius: '16px', padding: '1.8rem', border: '1px solid var(--border)', marginBottom: '1.5rem' },
     sec: { fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '1rem' },
@@ -254,3 +254,4 @@ const s = {
 };
 
 export default SectionResults;
+

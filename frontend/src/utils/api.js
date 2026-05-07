@@ -27,6 +27,8 @@ export const createUserByAdmin = (data) => API.post('/users', data);
 export const deleteUser = (id) => API.delete(`/users/${id}`);
 export const updateUser = (id, data) => API.put(`/users/${id}`, data);
 export const getPlatformAnalytics = () => API.get('/users/analytics');
+export const uploadAvatar = (formData) => API.post('/users/avatar', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const completeProfileSetup = () => API.put('/users/profile-setup');
 
 // Quizzes
 export const getPublishedQuizzes = (params) => API.get('/quizzes', { params });

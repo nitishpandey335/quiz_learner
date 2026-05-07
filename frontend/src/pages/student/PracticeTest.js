@@ -159,7 +159,7 @@ const PracticeTest = () => {
 };
 
 const s = {
-    page: { maxWidth: 1200, margin: '0 auto', padding: '2rem 3rem' },
+    page: { maxWidth: 1200, margin: '0 auto', padding: 'clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 3rem)' },
     hero: { background: 'linear-gradient(135deg, #6366f115, #06b6d415)', borderRadius: '24px', padding: '2.5rem', marginBottom: '2rem', border: '1px solid var(--border)', textAlign: 'center' },
     heroTitle: { fontSize: '2.2rem', fontWeight: 800, color: 'var(--text)', marginBottom: '0.5rem' },
     heroSub: { color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '1rem' },
@@ -192,3 +192,4 @@ const s = {
 };
 
 export default PracticeTest;
+

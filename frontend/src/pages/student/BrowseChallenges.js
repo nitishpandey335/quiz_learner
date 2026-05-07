@@ -88,7 +88,7 @@ const BrowseChallenges = () => {
 };
 
 const s = {
-    page: { padding: '2rem 3rem', maxWidth: 1100, margin: '0 auto' },
+    page: { padding: 'clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 3rem)', maxWidth: 1100, margin: '0 auto' },
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' },
     title: { fontSize: '2rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.3rem' },
     sub: { color: 'var(--text-muted)', fontSize: '0.95rem' },
@@ -112,3 +112,4 @@ const s = {
 };
 
 export default BrowseChallenges;
+

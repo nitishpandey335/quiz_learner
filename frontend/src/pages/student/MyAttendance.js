@@ -107,7 +107,7 @@ const MyAttendance = () => {
 };
 
 const s = {
-    page: { padding: '2rem 3rem', maxWidth: 900, margin: '0 auto' },
+    page: { padding: 'clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 3rem)', maxWidth: 900, margin: '0 auto' },
     title: { fontSize: '2rem', fontWeight: 700, color: 'var(--text)', marginBottom: '1.5rem' },
     statsRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' },
     statCard: { background: 'var(--card)', border: '2px solid', borderRadius: '14px', padding: '1.2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' },
@@ -129,3 +129,4 @@ const s = {
 };
 
 export default MyAttendance;
+

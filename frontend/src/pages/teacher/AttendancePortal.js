@@ -291,7 +291,7 @@ const AttendancePortal = () => {
 };
 
 const s = {
-    page: { padding: '2rem 3rem', maxWidth: 1100, margin: '0 auto' },
+    page: { padding: 'clamp(1rem, 3vw, 2rem) clamp(1rem, 3vw, 3rem)', maxWidth: 1100, margin: '0 auto' },
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' },
     title: { fontSize: '2rem', fontWeight: 700, color: 'var(--text)' },
     tabs: { display: 'flex', gap: '0.5rem', background: 'var(--bg)', borderRadius: '12px', padding: '4px' },
@@ -327,3 +327,4 @@ const s = {
 };
 
 export default AttendancePortal;
+
