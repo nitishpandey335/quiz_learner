@@ -1,61 +1,33 @@
-# Quiz Learner – AI Powered Learning Platform
+# Quiz Learner 🧠
 
-## Setup Instructions
+An AI-Powered Learning Platform with quizzes, notes, coding challenges, and attendance management.
 
-### 1. Backend Setup
-```bash
-cd backend
-npm install
-```
-Edit `.env` and add your MongoDB Atlas URI:
-```
-MONGO_URI=mongodb+srv://<user>:<pass>@cluster0.mongodb.net/quizlearner
-JWT_SECRET=your_secret_key
-PORT=5000
-```
-```bash
-npm run dev
-```
+## 🌐 Live Demo
 
-### 2. Frontend Setup
-```bash
-cd frontend
-npm install
-npm start
-```
+**Frontend:** https://quiz-learner-lhic.vercel.app
 
-### 3. Create Admin User
-Register normally, then in MongoDB Atlas manually set `role: "admin"` for that user.
+**Backend API:** https://quiz-learner-m39n.vercel.app
 
----
+## ✨ Features
 
-## Project Structure
-```
-quiz-learner/
-├── backend/
-│   ├── controllers/     # Business logic
-│   ├── middleware/      # JWT auth middleware
-│   ├── models/          # MongoDB schemas
-│   ├── routes/          # API routes
-│   └── server.js
-└── frontend/
-    └── src/
-        ├── components/  # Reusable UI components
-        ├── context/     # Auth context + theme
-        ├── pages/
-        │   ├── admin/
-        │   ├── teacher/
-        │   └── student/
-        └── utils/       # Axios API calls
-```
+- 🤖 AI-powered quiz generation (GROQ)
+- 📝 AI notes generation
+- 💻 Coding challenges with Judge0
+- 📋 Attendance portal
+- 🗓️ Timetable management
+- 📊 Section-wise results with PDF download
+- 🔒 OTP login via Gmail
+- 📱 Mobile responsive
 
-## API Endpoints
-| Method | Route | Access |
-|--------|-------|--------|
-| POST | /api/auth/register | Public |
-| POST | /api/auth/login | Public |
-| GET | /api/users | Admin |
-| GET | /api/quizzes | All |
-| POST | /api/quizzes | Teacher |
-| POST | /api/attempts | Student |
-| POST | /api/ai/generate-questions | All |
+## 🚀 Tech Stack
+
+- **Frontend:** React.js, Framer Motion, Monaco Editor
+- **Backend:** Node.js, Express.js, MongoDB
+- **AI:** GROQ (llama-3.3-70b)
+- **Deployment:** Vercel
+
+## 👤 Roles
+
+- **Admin** — User management, timetable, analytics
+- **Teacher** — Create quizzes, notes, coding challenges, attendance
+- **Student** — Attempt quizzes, practice tests, coding, view results
