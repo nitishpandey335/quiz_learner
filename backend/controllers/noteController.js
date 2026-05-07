@@ -1,9 +1,6 @@
 const Note = require('../models/Note');
 const User = require('../models/User');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const getModel = () => genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+const { ask } = require('../utils/groqClient');
 
 // GET /api/notes  — student gets notes for their class
 const getNotesForStudent = async (req, res) => {
@@ -57,7 +54,7 @@ const deleteNote = async (req, res) => {
     }
 };
 
-// PUT /api/users/set-class  — student sets their class
+// PUT /api/notes/set-class  — student sets their class
 const setStudentClass = async (req, res) => {
     try {
         const { studentClass, collegeCourse } = req.body;
@@ -74,14 +71,16 @@ const setStudentClass = async (req, res) => {
     }
 };
 
-// POST /api/notes/ai-generate  — AI generates note content
+// POST /api/notes/ai-generate  — AI generates note content using GROQ
 const aiGenerateNote = async (req, res) => {
     try {
         const { subject, topic, targetClass } = req.body;
+        if (!subject || !topic || !targetClass)
+            return res.status(400).json({ message: 'Subject, topic and class are required' });
 
         const prompt = `Create concise study notes for ${targetClass} students on the topic: "${topic}" (Subject: ${subject}).
 
-Format:
+Format your response exactly like this:
 ## ${topic}
 
 ### Key Concepts
@@ -90,18 +89,18 @@ Format:
 - Point 3
 
 ### Important Formulas / Facts
-- ...
+- Formula or fact 1
+- Formula or fact 2
 
 ### Summary
 2-3 lines summary.
 
 Keep it simple, clear, and appropriate for ${targetClass} level. Max 300 words.`;
 
-        const model = getModel();
-        const result = await model.generateContent(prompt);
-        const content = result.response.text().trim();
+        const content = await ask(prompt, 'You are an expert teacher. Create clear, structured study notes in markdown format.');
         res.json({ content });
     } catch (err) {
+        console.error('[aiGenerateNote]', err.message);
         res.status(500).json({ message: err.message });
     }
 };

@@ -2,6 +2,7 @@ const CodingChallenge = require('../models/CodingChallenge');
 const CodingAttempt = require('../models/CodingAttempt');
 const vm = require('vm');
 const axios = require('axios');
+const { ask } = require('../utils/groqClient');
 
 // Judge0 language IDs
 const LANG_IDS = {
@@ -225,4 +226,40 @@ const getMyAttempts = async (req, res) => {
     }
 };
 
-module.exports = { runCode, submitCode, getChallenges, getTeacherChallenges, getChallengeById, createChallenge, deleteChallenge, updateChallenge, getMyAttempts };
+module.exports = { runCode, submitCode, getChallenges, getTeacherChallenges, getChallengeById, createChallenge, aiGenerateChallenge, deleteChallenge, updateChallenge, getMyAttempts };
+
+// POST /api/coding/ai-generate — AI generates coding challenge
+async function aiGenerateChallenge(req, res) {
+    try {
+        const { topic, difficulty = 'medium', language = 'javascript', targetClass = '' } = req.body;
+        if (!topic?.trim()) return res.status(400).json({ message: 'Topic is required' });
+
+        const prompt = `Generate 1 coding challenge on: "${topic}"
+Language: ${language}, Difficulty: ${difficulty}${targetClass ? ', Level: ' + targetClass : ''}
+
+Return ONLY a valid JSON object (no markdown):
+{
+  "title": "Challenge title",
+  "description": "Clear problem description with input/output examples",
+  "starterCode": "// Write your solution here\\n",
+  "solution": "// complete working solution",
+  "testCases": [
+    {"input": "2 3", "expectedOutput": "5", "isHidden": false},
+    {"input": "10 20", "expectedOutput": "30", "isHidden": false},
+    {"input": "0 0", "expectedOutput": "0", "isHidden": true},
+    {"input": "100 200", "expectedOutput": "300", "isHidden": true}
+  ],
+  "tags": ["tag1", "tag2"]
+}`;
+
+        const raw = await ask(prompt, 'You are an expert competitive programmer. Return only valid JSON object.');
+        const cleaned = raw.replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if (!match) return res.status(500).json({ message: 'AI returned invalid format' });
+        const challenge = JSON.parse(match[0]);
+        res.json({ challenge, topic, difficulty, language });
+    } catch (err) {
+        console.error('[aiGenerateChallenge]', err.message);
+        res.status(500).json({ message: err.message });
+    }
+}
