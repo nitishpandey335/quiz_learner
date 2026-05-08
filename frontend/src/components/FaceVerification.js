@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import * as faceapi from 'face-api.js';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const MODEL_URL = '/models';
@@ -19,6 +18,8 @@ const FaceVerification = ({ onVerified, onCancel }) => {
         const loadModels = async () => {
             try {
                 setMessage('Loading AI models...');
+                // Dynamic import to avoid build issues
+                const faceapi = await import('face-api.js');
                 await Promise.all([
                     faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
                     faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
@@ -66,6 +67,7 @@ const FaceVerification = ({ onVerified, onCancel }) => {
         setMessage('Scanning your face...');
         setProgress(0);
 
+        const faceapi = await import('face-api.js');
         let detected = false;
         let scanCount = 0;
         const totalScans = 10;
